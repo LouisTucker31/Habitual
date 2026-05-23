@@ -1,0 +1,115 @@
+/* layout.css — page container, scroll structure, header, section spacing */
+
+/* App container — centred column, iPhone-width feel */
+#app {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 430px;
+  margin: 0 auto;
+  padding-bottom: var(--space-12);
+}
+
+/* ── Header ─────────────────────────────────────── */
+#section-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: linear-gradient(
+    to bottom,
+    rgba(8, 13, 26, 0.98) 0%,
+    rgba(8, 13, 26, 0.92) 85%,
+    rgba(8, 13, 26, 0.0) 100%
+  );
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  padding: var(--space-5) var(--space-5) var(--space-6);
+}
+
+.header-inner {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.header-left {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-shrink: 0;
+}
+
+/* ── Section shared styles ───────────────────────── */
+.section {
+  padding: var(--space-6) var(--space-5) 0;
+}
+
+.section-title {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semi);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: var(--space-4);
+}
+
+/* ── Today section ───────────────────────────────── */
+#section-today {
+  padding: var(--space-4) var(--space-5) 0;
+}
+
+#section-today .habits-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+/* ── Week section ────────────────────────────────── */
+#section-week {
+  padding-top: var(--space-8);
+}
+
+/* ── Calendar section ────────────────────────────── */
+#section-calendar {
+  padding-top: var(--space-8);
+}
+
+/* ── Insights section ────────────────────────────── */
+#section-insights {
+  padding-top: var(--space-8);
+}
+
+/* ── Section dividers ────────────────────────────── */
+.section + .section {
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+/* ── Safe area for iPhone home indicator ─────────── */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  #app {
+    padding-bottom: calc(var(--space-12) + env(safe-area-inset-bottom));
+  }
+}
+
+/* ── Desktop — add slight side padding feel ──────── */
+@media (min-width: 500px) {
+  #section-header {
+    padding-left: var(--space-6);
+    padding-right: var(--space-6);
+  }
+  .section {
+    padding-left: var(--space-6);
+    padding-right: var(--space-6);
+  }
+  #section-today {
+    padding-left: var(--space-6);
+    padding-right: var(--space-6);
+  }
+}

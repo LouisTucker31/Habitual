@@ -1,0 +1,178 @@
+/* animations.css — keyframes and animation classes; Phase 1 defines all, Phase 2+ triggers them */
+
+/* ══════════════════════════════════════════════════
+   KEYFRAMES
+══════════════════════════════════════════════════ */
+
+/* Card entrance — subtle fade-up on load */
+@keyframes cardEntrance {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Completion flash — green pulse */
+@keyframes completionFlash {
+  0%   { background-color: transparent; }
+  30%  { background-color: rgba(52, 211, 153, 0.25); }
+  100% { background-color: transparent; }
+}
+
+/* Checkmark bounce-in */
+@keyframes checkBounce {
+  0%   { transform: scale(0) rotate(-20deg); opacity: 0; }
+  60%  { transform: scale(1.25) rotate(5deg); opacity: 1; }
+  80%  { transform: scale(0.9) rotate(-2deg); }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+/* Card slide to bottom (on completion) */
+@keyframes cardSlideOut {
+  0%   { opacity: 1; transform: translateX(0); max-height: 120px; }
+  40%  { opacity: 0; transform: translateX(24px); }
+  100% { opacity: 0; max-height: 0; margin-bottom: 0; padding-top: 0; padding-bottom: 0; }
+}
+
+/* Modal slide up */
+@keyframes modalSlideUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+/* Modal slide down (dismiss) */
+@keyframes modalSlideDown {
+  from { transform: translateY(0); }
+  to   { transform: translateY(100%); }
+}
+
+/* Celebration overlay fade in */
+@keyframes celebrationFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Celebration number pop */
+@keyframes celebrationPop {
+  0%   { transform: scale(0.4); opacity: 0; }
+  70%  { transform: scale(1.08); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Confetti burst — individual particle */
+@keyframes confettiFall {
+  0% {
+    transform: translateY(-20px) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+/* Banner slide down from top */
+@keyframes bannerSlideDown {
+  from { transform: translateX(-50%) translateY(-100%); }
+  to   { transform: translateX(-50%) translateY(0); }
+}
+
+/* Flame pulse at milestone */
+@keyframes flamePulse {
+  0%, 100% { transform: scale(1);    filter: brightness(1); }
+  50%       { transform: scale(1.3); filter: brightness(1.4); }
+}
+
+/* Backdrop fade in */
+@keyframes backdropFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Shake — for validation errors */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-6px); }
+  40%       { transform: translateX(6px); }
+  60%       { transform: translateX(-4px); }
+  80%       { transform: translateX(4px); }
+}
+
+/* Subtle breathe — for streak flames at milestones */
+@keyframes breathe {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.65; }
+}
+
+/* ══════════════════════════════════════════════════
+   ANIMATION UTILITY CLASSES
+   Applied by JavaScript — all durations use variables
+══════════════════════════════════════════════════ */
+
+.anim-card-entrance {
+  animation: cardEntrance var(--duration-slow) var(--ease-out) both;
+}
+
+.anim-completion-flash {
+  animation: completionFlash var(--duration-slow) var(--ease-out) forwards;
+}
+
+.anim-check-bounce {
+  animation: checkBounce var(--duration-spring) var(--ease-spring) both;
+}
+
+.anim-card-slide-out {
+  animation: cardSlideOut var(--duration-slow) var(--ease-out) forwards;
+  overflow: hidden;
+}
+
+.anim-celebration-in {
+  animation: celebrationFadeIn var(--duration-normal) var(--ease-out) forwards;
+}
+
+.anim-celebration-pop {
+  animation: celebrationPop var(--duration-spring) var(--ease-spring) both;
+}
+
+.anim-banner-in {
+  animation: bannerSlideDown var(--duration-slow) var(--ease-out) forwards;
+}
+
+.anim-flame-pulse {
+  animation: flamePulse 1.2s var(--ease-in-out) infinite;
+}
+
+.anim-shake {
+  animation: shake var(--duration-slow) var(--ease-out);
+}
+
+.anim-breathe {
+  animation: breathe 2s var(--ease-in-out) infinite;
+}
+
+/* Staggered card entrance delays — applied inline by JS */
+.anim-card-entrance:nth-child(1)  { animation-delay: 0ms; }
+.anim-card-entrance:nth-child(2)  { animation-delay: 40ms; }
+.anim-card-entrance:nth-child(3)  { animation-delay: 80ms; }
+.anim-card-entrance:nth-child(4)  { animation-delay: 120ms; }
+.anim-card-entrance:nth-child(5)  { animation-delay: 160ms; }
+.anim-card-entrance:nth-child(6)  { animation-delay: 200ms; }
+.anim-card-entrance:nth-child(7)  { animation-delay: 240ms; }
+.anim-card-entrance:nth-child(8)  { animation-delay: 280ms; }
+.anim-card-entrance:nth-child(9)  { animation-delay: 320ms; }
+.anim-card-entrance:nth-child(10) { animation-delay: 360ms; }
+
+/* Confetti particle — position/colour set inline by JS */
+.confetti-particle {
+  position: fixed;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  pointer-events: none;
+  z-index: 600;
+  animation: confettiFall 1.8s var(--ease-in-out) forwards;
+}
