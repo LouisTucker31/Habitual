@@ -10,15 +10,15 @@ const YESTERDAY = toDateString(new Date(Date.now() - 864e5));
 
 const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
-let _completedOpen = false;
-let _missedOpen    = false;
+let _missedOpen  = false;
+let _rendering   = false; // guard against double-render during completion animation
 
 // ── Entry ─────────────────────────────────────────────────────────────────────
 
 export async function initialise() {
   await render();
-  document.addEventListener('habitsUpdated', render);
-  document.addEventListener('logsUpdated',   render);
+  document.addEventListener('habitsUpdated', () => { if (!_rendering) render(); });
+  document.addEventListener('logsUpdated',   () => { if (!_rendering) render(); });
   scheduleMidnightRefresh();
 }
 
@@ -44,7 +44,7 @@ async function render() {
 
   const missed = await getMissedYesterday(habits);
 
-  let html = '';
+  let html = `<p class="section-title">Today</p>`;
 
   // Missed banner
   if (missed.length > 0) {
@@ -61,31 +61,21 @@ async function render() {
       </div>
     `;
   } else {
-    // Perfect day nudge
-    if (active.length === 0 && completed.length > 0) {
-      html += `<div class="perfect-nudge">Perfect day so far 🔥</div>`;
-    }
+    // Progress nudge — always shown, updates in place
+    const nudgeMsg = active.length === 0
+      ? `Perfect day so far 🔥`
+      : active.length === due.length
+        ? `${due.length} habit${due.length > 1 ? 's' : ''} to go — let's get started`
+        : `${active.length} to go — keep it up 💪`;
+    html += `<div class="perfect-nudge">${nudgeMsg}</div>`;
 
-    // Active habits
-    html += `<div class="habits-list" id="active-habits">`;
-    active.forEach((h, i) => {
-      html += renderCard(h, logMap[h.id] ?? null, false, i);
+    // Single flat list — completed cards show green tick, stay in place
+    html += `<div class="habits-list" id="habits-list">`;
+    due.forEach((h, i) => {
+      const log = logMap[h.id] ?? null;
+      html += renderCard(h, log, !!log?.completed, i);
     });
     html += `</div>`;
-
-    // Completed section
-    if (completed.length > 0) {
-      const isOpen = _completedOpen || active.length === 0;
-      html += `
-        <div class="completed-toggle ${isOpen ? 'is-open' : ''}" id="completed-toggle">
-          <span>Completed (${completed.length}) ✓</span>
-          <span class="completed-toggle__chevron">⌄</span>
-        </div>
-        <div class="habits-list" id="completed-habits" style="${isOpen ? '' : 'display:none'}">
-          ${completed.map((h, i) => renderCard(h, logMap[h.id], true, i)).join('')}
-        </div>
-      `;
-    }
   }
 
   section.innerHTML = html;
@@ -139,13 +129,9 @@ function renderCard(habit, log, isCompleted, index) {
         ${progressStrip}
       </div>
       <div class="habit-card__action">
-        ${isCompleted
-          ? `<span class="check-btn is-checked">✓</span>`
-          : `<div class="streak-badge ${flameClass}">
-               <span class="streak-badge__flame">${flameEmoji}</span>
-               <span>${streak}</span>
-             </div>`
-        }
+        <span class="check-btn ${isCompleted ? 'is-checked' : ''}">
+          ${isCompleted ? '✓' : ''}
+        </span>
       </div>
     </div>
   `;
@@ -195,33 +181,22 @@ function renderMissedBanner(missed) {
 // ── Listeners ─────────────────────────────────────────────────────────────────
 
 function attachCardListeners(active, completed, logMap, missed) {
-  // Active habit cards
-  document.querySelectorAll('#active-habits .habit-card').forEach(card => {
-    card.addEventListener('click', () => handleCardTap(card, logMap));
-    card.addEventListener('contextmenu', e => {
-      e.preventDefault();
-      const habit = getAll().find(h => h.id === parseInt(card.dataset.id));
-      if (habit) openHabitModal(habit);
+  // All habit cards — body opens edit modal, action button completes/undoes
+  document.querySelectorAll('#habits-list .habit-card').forEach(card => {
+    card.addEventListener('click', e => {
+      if (e.target.closest('.habit-card__action')) {
+        const isCompleted = card.dataset.completed === 'true';
+        if (isCompleted) {
+          handleUndo(card);
+        } else {
+          handleCardTap(card, logMap);
+        }
+      } else {
+        const habit = getAll().find(h => h.id === parseInt(card.dataset.id));
+        if (habit) openHabitModal(habit);
+      }
     });
   });
-
-  // Completed habit cards — tap to undo
-  document.querySelectorAll('#completed-habits .habit-card').forEach(card => {
-    card.addEventListener('click', () => handleUndo(card));
-  });
-
-  // Completed toggle
-  const toggle = document.getElementById('completed-toggle');
-  if (toggle) {
-    toggle.addEventListener('click', () => {
-      _completedOpen = !_completedOpen;
-      toggle.classList.toggle('is-open', _completedOpen);
-      const list = document.getElementById('completed-habits');
-      if (list) list.style.display = _completedOpen ? '' : 'none';
-      toggle.querySelector('.completed-toggle__chevron').textContent =
-        _completedOpen ? '⌃' : '⌄';
-    });
-  }
 
   // Missed banner toggle
   const banner = document.getElementById('missed-banner');
@@ -260,17 +235,44 @@ async function handleCardTap(card, logMap) {
     return;
   }
 
-  // Flash + checkmark + slide
-  card.classList.add('anim-completion-flash');
+  // Block logsUpdated from triggering a re-render during animation
+  _rendering = true;
+
+  // Instantly update card visuals in-place
+  card.dataset.completed = 'true';
+  card.classList.add('is-completed', 'anim-completion-flash');
+
+  const checkBtn = card.querySelector('.check-btn');
+  if (checkBtn) {
+    checkBtn.classList.add('is-checked');
+    checkBtn.textContent = '✓';
+  }
+
   const iconWrap = card.querySelector('.habit-card__icon-wrap');
-  iconWrap.innerHTML = `<span class="habit-card__check anim-check-bounce">✓</span>`;
-
-  await logCompletion({ habitId: id, date: TODAY });
-
-  setTimeout(() => card.classList.add('anim-card-slide-out'), 300);
-  setTimeout(() => render(), 700);
+  if (iconWrap) {
+    iconWrap.innerHTML = `<span class="habit-card__icon">${habit.icon}</span><span class="habit-card__check anim-check-bounce">✓</span>`;
+  }
 
   if (navigator.vibrate) navigator.vibrate(10);
+
+  // Write to DB
+  await logCompletion({ habitId: id, date: TODAY });
+
+  // Now allow re-renders and do one clean update of just the nudge text
+  _rendering = false;
+  updateNudgeText();
+}
+
+function updateNudgeText() {
+  const nudge = document.querySelector('.perfect-nudge');
+  if (!nudge) return;
+  const total    = document.querySelectorAll('#habits-list .habit-card').length;
+  const remaining = document.querySelectorAll('#habits-list .habit-card:not(.is-completed)').length;
+  nudge.textContent = remaining === 0
+    ? `Perfect day so far 🔥`
+    : remaining === total
+      ? `${total} habit${total > 1 ? 's' : ''} to go — let's get started`
+      : `${remaining} to go — keep it up 💪`;
 }
 
 async function handleUndo(card) {

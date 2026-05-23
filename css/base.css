@@ -162,19 +162,11 @@ body::after {
   z-index: 0;
 }
 
-/* Scrollbar — desktop only */
-@media (pointer: fine) {
-  ::-webkit-scrollbar { width: 4px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb {
-    background: var(--color-muted);
-    border-radius: var(--radius-full);
-    opacity: 0.4;
-  }
-  * { scrollbar-width: thin; scrollbar-color: var(--color-muted) transparent; }
+/* Hide scrollbar everywhere — native iOS feel */
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
-
-/* Mobile — hide scrollbar */
-@media (pointer: coarse) {
-  ::-webkit-scrollbar { display: none; }
+*::-webkit-scrollbar {
+  display: none;
 }

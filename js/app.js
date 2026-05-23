@@ -38,6 +38,11 @@ function renderHeader() {
       </div>
     </div>
   `;
+  // Pin the app padding-top to the actual rendered header height
+  requestAnimationFrame(() => {
+    const h = document.getElementById('section-header').offsetHeight;
+    document.documentElement.style.setProperty('--header-height', h + 'px');
+  });
 }
 
 // ── Non-live section placeholders ────────────────────────────────────────────

@@ -1,19 +1,11 @@
 /* layout.css — page container, scroll structure, header, section spacing */
 
-/* App container — centred column, iPhone-width feel */
-#app {
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  max-width: 430px;
-  margin: 0 auto;
-  padding-bottom: var(--space-12);
-}
-
-/* ── Header ─────────────────────────────────────── */
+/* ── Header — fixed, never scrolls ──────────────── */
 #section-header {
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 100;
   background: linear-gradient(
     to bottom,
@@ -24,6 +16,17 @@
   -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
   padding: calc(var(--space-5) + env(safe-area-inset-top)) var(--space-5) var(--space-6);
+}
+
+/* App container — centred column, clears the fixed header */
+#app {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 430px;
+  margin: 0 auto;
+  padding-top: var(--header-height, 110px);
+  padding-bottom: var(--space-12);
 }
 
 .header-inner {
@@ -62,7 +65,7 @@
 
 /* ── Today section ───────────────────────────────── */
 #section-today {
-  padding: var(--space-4) var(--space-5) 0;
+  padding: var(--space-4) var(--space-5) var(--space-8);
 }
 
 #section-today .habits-list {
@@ -98,9 +101,13 @@
   }
 }
 
-/* ── Desktop — add slight side padding feel ──────── */
+/* ── Desktop — centre header and add side padding ── */
 @media (min-width: 500px) {
   #section-header {
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    width: 430px;
     padding-left: var(--space-6);
     padding-right: var(--space-6);
   }
