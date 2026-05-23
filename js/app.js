@@ -4,6 +4,7 @@ import { openDB }                          from './db.js';
 import { toDateString, friendlyDate }      from './utils.js';
 import { initialise as initHabits }        from './habits.js';
 import { initialise as initStreaks }       from './streaks.js';
+import { getOverallAppStreak }             from './streaks.js';
 import { initialise as initWeek }          from './views/week.js';
 import { initialise as initCalendar }      from './views/calendar.js';
 import { initialise as initInsights }      from './views/insights.js';
@@ -26,15 +27,10 @@ function renderHeader() {
         <span class="header-date">${friendlyDate()}</span>
       </div>
       <div class="header-right">
-        <div class="score-ring">
-          <span class="score-ring__value" id="header-score">—</span>
-          <span class="score-ring__label">today</span>
-        </div>
         <div class="overall-streak">
-          <span class="overall-streak__flame">🔥</span>
           <span class="overall-streak__count" id="header-streak">0</span>
+          <span class="overall-streak__flame">🔥</span>
         </div>
-        <button class="btn btn--icon" id="btn-settings" aria-label="Settings">⚙️</button>
       </div>
     </div>
   `;
@@ -43,6 +39,15 @@ function renderHeader() {
     const h = document.getElementById('section-header').offsetHeight;
     document.documentElement.style.setProperty('--header-height', h + 'px');
   });
+}
+
+// ── Header stats ─────────────────────────────────────────────────────────────
+
+async function updateHeaderStats() {
+  const today    = toDateString();
+  const appStreak = await getOverallAppStreak();
+  const streakEl  = document.getElementById('header-streak');
+  if (streakEl) streakEl.textContent = appStreak;
 }
 
 // ── Non-live section placeholders ────────────────────────────────────────────
@@ -148,6 +153,11 @@ async function boot() {
 
   // FAB always visible
   injectFAB();
+
+  // Header stats — update now and whenever logs or habits change
+  await updateHeaderStats();
+  document.addEventListener('logsUpdated',   updateHeaderStats);
+  document.addEventListener('habitsUpdated', updateHeaderStats);
 }
 
 document.addEventListener('DOMContentLoaded', boot);

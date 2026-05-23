@@ -31,7 +31,7 @@
 
 .header-inner {
   display: flex;
-  align-items: flex-start;
+  align-items: flex-end;
   justify-content: space-between;
   gap: var(--space-4);
 }
@@ -89,10 +89,7 @@
   padding-top: var(--space-12);
 }
 
-/* ── Section dividers ────────────────────────────── */
-.section + .section {
-  border-top: 1px solid rgba(255, 255, 255, 0.04);
-}
+/* ── Section dividers — removed, padding is sufficient ── */
 
 /* ── Safe area for iPhone home indicator ─────────── */
 @supports (padding-bottom: env(safe-area-inset-bottom)) {
