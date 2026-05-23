@@ -79,7 +79,8 @@ export async function getCurrentStreak(habit) {
       // Freeze already applied for this day — treat as protected miss
       streak++;
     } else {
-      // Miss — check if a freeze is available for this week
+      // Miss — only a freeze can save it, and only if streak > 0 already
+      if (streak === 0) break;
       const week = mondayOf(cursor);
       if (!freezesUsed[week]) {
         freezesUsed[week] = true;

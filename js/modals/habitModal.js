@@ -51,6 +51,7 @@ export function open(habitToEdit = null, onSave = null) {
   else syncToDOM();
 
   _backdrop.classList.add('is-open');
+  if (_sheet) _sheet.scrollTop = 0;
   setTimeout(() => {
     const nameInput = _form.querySelector('#hm-name');
     if (nameInput) nameInput.focus();
