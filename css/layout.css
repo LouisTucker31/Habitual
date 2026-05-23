@@ -23,7 +23,7 @@
   );
   -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
-  padding: var(--space-5) var(--space-5) var(--space-6);
+  padding: calc(var(--space-5) + env(safe-area-inset-top)) var(--space-5) var(--space-6);
 }
 
 .header-inner {
