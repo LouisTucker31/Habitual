@@ -166,13 +166,6 @@ function buildDOM() {
         <button class="btn btn--danger" id="hm-delete" style="display:none;margin-top:8px">
           Delete habit
         </button>
-        <div class="discard-bar" id="hm-discard" style="display:none">
-          <span>Discard changes?</span>
-          <div style="display:flex;gap:8px">
-            <button type="button" class="btn btn--secondary" id="hm-discard-cancel">Keep editing</button>
-            <button type="button" class="btn btn--danger"    id="hm-discard-confirm">Discard</button>
-          </div>
-        </div>
       </div>
     </div>
   `;
@@ -419,48 +412,67 @@ function attachListeners() {
   document.getElementById('hm-delete').addEventListener('click', handleDelete);
 
   // Discard bar
-  document.getElementById('hm-discard-cancel').addEventListener('click', () => {
-    document.getElementById('hm-discard').style.display = 'none';
-  });
-  document.getElementById('hm-discard-confirm').addEventListener('click', () => {
-    document.getElementById('hm-discard').style.display = 'none';
-    close();
-  });
 }
 
 // ── Drag-to-dismiss ───────────────────────────────────────────────────────────
+// Only active when drag starts on the drag handle. Detects intent (vertical vs
+// horizontal) before committing, so horizontal swipes inside the sheet don't
+// accidentally dismiss it.
 
 function setupDragDismiss() {
-  const sheet = document.getElementById('habit-modal-sheet');
-  let startY = 0, currentY = 0, dragging = false;
+  const sheet  = document.getElementById('habit-modal-sheet');
+  const handle = sheet.querySelector('.modal-drag-handle');
+
+  let startX = 0, startY = 0, deltaY = 0;
+  let dragging = false, intentDecided = false, isVertical = false;
 
   const onStart = e => {
+    startX = e.touches ? e.touches[0].clientX : e.clientX;
     startY = e.touches ? e.touches[0].clientY : e.clientY;
+    deltaY = 0;
     dragging = true;
-    sheet.style.transition = 'none';
+    intentDecided = false;
+    isVertical = false;
   };
 
   const onMove = e => {
     if (!dragging) return;
-    currentY = (e.touches ? e.touches[0].clientY : e.clientY) - startY;
-    if (currentY > 0) sheet.style.transform = `translateY(${currentY}px)`;
+    const x = e.touches ? e.touches[0].clientX : e.clientX;
+    const y = e.touches ? e.touches[0].clientY : e.clientY;
+    const dx = Math.abs(x - startX);
+    const dy = y - startY;
+
+    // Decide intent on first meaningful movement
+    if (!intentDecided && (dx > 4 || Math.abs(dy) > 4)) {
+      isVertical = Math.abs(dy) > dx;
+      intentDecided = true;
+    }
+
+    if (!isVertical) return; // horizontal — let the sheet scroll naturally
+
+    deltaY = dy;
+    if (deltaY > 0) {
+      sheet.style.transition = 'none';
+      sheet.style.transform  = `translateY(${deltaY}px)`;
+    }
   };
 
   const onEnd = () => {
     if (!dragging) return;
     dragging = false;
     sheet.style.transition = '';
-    sheet.style.transform = '';
-    if (currentY > 100) tryClose();
-    currentY = 0;
+    sheet.style.transform  = '';
+    if (isVertical && deltaY > 100) tryClose();
+    deltaY = 0;
   };
 
-  sheet.addEventListener('touchstart', onStart, { passive: true });
-  sheet.addEventListener('touchmove',  onMove,  { passive: true });
-  sheet.addEventListener('touchend',   onEnd);
-  sheet.addEventListener('mousedown',  onStart);
-  window.addEventListener('mousemove', onMove);
-  window.addEventListener('mouseup',   onEnd);
+  // Attach only to the drag handle — not the whole sheet
+  handle.addEventListener('touchstart', onStart, { passive: true });
+  handle.addEventListener('touchmove',  onMove,  { passive: false });
+  handle.addEventListener('touchend',   onEnd);
+  handle.addEventListener('mousedown',  onStart);
+  window.addEventListener('mousemove',  onMove);
+  window.addEventListener('mouseup',    onEnd);
 }
 
 // ── Save / delete ─────────────────────────────────────────────────────────────
@@ -556,10 +568,7 @@ function isDirty() {
 }
 
 function tryClose() {
-  if (isDirty()) {
-    document.getElementById('hm-discard').style.display = 'flex';
-    return;
-  }
+  if (isDirty() && !window.confirm('Discard changes?')) return;
   close();
 }
 

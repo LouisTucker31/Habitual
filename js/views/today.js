@@ -155,10 +155,13 @@ function renderCard(habit, log, isCompleted, index) {
 
 async function getMissedYesterday(habits) {
   const yesterdayName = DAY_NAMES[new Date(Date.now() - 864e5).getDay()];
-  const dueYesterday = habits.filter(h =>
-    h.type === 'daily' ||
-    (h.type === 'setDays' && h.days.includes(yesterdayName))
-  );
+  // Only consider habits that existed before today
+  const dueYesterday = habits.filter(h => {
+    const createdToday = toDateString(new Date(h.createdAt)) === TODAY;
+    if (createdToday) return false;
+    return h.type === 'daily' ||
+      (h.type === 'setDays' && h.days.includes(yesterdayName));
+  });
   const missed = [];
   for (const h of dueYesterday) {
     const log = await getLogForHabit(h.id, YESTERDAY);

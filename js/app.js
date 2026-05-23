@@ -40,6 +40,35 @@ function renderHeader() {
   `;
 }
 
+// ── Non-live section placeholders ────────────────────────────────────────────
+
+function renderPlaceholderSections() {
+  document.getElementById('section-week').innerHTML = `
+    <p class="section-title">This Week</p>
+    <div class="empty-state">
+      <span class="empty-state__icon">📅</span>
+      <span class="empty-state__heading">Coming soon</span>
+      <span class="empty-state__body">Your weekly grid will appear here.</span>
+    </div>
+  `;
+  document.getElementById('section-calendar').innerHTML = `
+    <p class="section-title">History</p>
+    <div class="empty-state">
+      <span class="empty-state__icon">🗓️</span>
+      <span class="empty-state__heading">Coming soon</span>
+      <span class="empty-state__body">Your monthly heatmap will fill in here.</span>
+    </div>
+  `;
+  document.getElementById('section-insights').innerHTML = `
+    <p class="section-title">Insights</p>
+    <div class="empty-state">
+      <span class="empty-state__icon">📊</span>
+      <span class="empty-state__heading">Coming soon</span>
+      <span class="empty-state__body">Stats unlock after a week of logging.</span>
+    </div>
+  `;
+}
+
 // ── Floating add button ───────────────────────────────────────────────────────
 
 function injectFAB() {
@@ -92,6 +121,7 @@ async function boot() {
   registerServiceWorker();
   injectAuroraBlob();
   renderHeader();
+  renderPlaceholderSections();
   setupGlobalListeners();
 
   // Initialise data layer first, then views
