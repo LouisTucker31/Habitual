@@ -163,7 +163,7 @@ function buildDOM() {
 
       <div class="modal-footer">
         <button class="btn btn--primary" id="hm-save">Add Habit</button>
-        <button class="btn btn--danger" id="hm-delete" style="display:none;margin-top:8px">
+        <button class="btn btn--danger-full" id="hm-delete" style="display:none">
           Delete habit
         </button>
       </div>
