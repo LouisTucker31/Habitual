@@ -63,7 +63,9 @@ export async function getCurrentStreak(habit) {
 
   // Walk back from yesterday
   let cursor = addDays(today, -1);
-  const freezesUsed = {}; // weekMonday -> boolean
+  const freezesUsed = {};
+  // Only allow freeze to cover a miss once we've seen a past completion in the walk-back
+  let pastCompletionSeen = false;
 
   for (let i = 0; i < 730; i++) {
     if (!isDue(habit, cursor)) {
@@ -75,18 +77,18 @@ export async function getCurrentStreak(habit) {
 
     if (log?.completed) {
       streak++;
+      pastCompletionSeen = true;
     } else if (log?.frozen) {
-      // Freeze already applied for this day — treat as protected miss
       streak++;
     } else {
-      // Miss — only a freeze can save it, and only if streak > 0 already
-      if (streak === 0) break;
+      // Freeze only bridges a gap in an already-established past chain
+      if (!pastCompletionSeen) break;
       const week = mondayOf(cursor);
       if (!freezesUsed[week]) {
         freezesUsed[week] = true;
-        streak++; // freeze covers it
+        streak++;
       } else {
-        break; // streak broken
+        break;
       }
     }
 
