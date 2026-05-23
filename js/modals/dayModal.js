@@ -218,27 +218,27 @@ function refreshRow(id, dateStr, habit, completed) {
 
 function setupDragDismiss(sheet) {
   if (!sheet) return;
-  let startY = 0, dragging = false;
+  let startY = 0, startScrollTop = 0, dragging = false;
 
   sheet.addEventListener('touchstart', e => {
-    startY = e.touches[0].clientY;
-    dragging = false;
+    startY         = e.touches[0].clientY;
+    startScrollTop = sheet.scrollTop;
+    dragging       = false;
   }, { passive: true });
 
   sheet.addEventListener('touchmove', e => {
     const dy = e.touches[0].clientY - startY;
-    if (dy > 10 && sheet.scrollTop <= 0) {
+    if (dy > 0 && startScrollTop <= 0) {
+      e.preventDefault();
       dragging = true;
-      sheet.style.transform = `translateY(${Math.max(0, dy)}px)`;
+      sheet.style.transform  = `translateY(${dy}px)`;
       sheet.style.transition = 'none';
-      sheet.style.overflow = 'hidden';
     }
-  }, { passive: true });
+  }, { passive: false });
 
   sheet.addEventListener('touchend', e => {
     const dy = e.changedTouches[0].clientY - startY;
     sheet.style.transition = '';
-    sheet.style.overflow   = '';
     sheet.style.transform  = '';
     if (dragging && dy > 80) close();
     dragging = false;

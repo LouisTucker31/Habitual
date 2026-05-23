@@ -69,14 +69,6 @@ function renderPlaceholderSections() {
       <span class="empty-state__body">Your monthly heatmap will fill in here.</span>
     </div>
   `;
-  document.getElementById('section-insights').innerHTML = `
-    <p class="section-title">Insights</p>
-    <div class="empty-state">
-      <span class="empty-state__icon">📊</span>
-      <span class="empty-state__heading">Coming soon</span>
-      <span class="empty-state__body">Stats unlock after a week of logging.</span>
-    </div>
-  `;
 }
 
 // ── Floating add button ───────────────────────────────────────────────────────
