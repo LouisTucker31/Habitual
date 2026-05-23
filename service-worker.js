@@ -1,6 +1,9 @@
 const CACHE_NAME = 'habitual-v1';
 
-const PRECACHE_URLS = [
+// Derive base path from where the SW is installed — works on GitHub Pages subdirs
+const BASE = self.location.pathname.replace(/\/service-worker\.js$/, '');
+
+const PRECACHE_PATHS = [
   '/',
   '/index.html',
   '/manifest.json',
@@ -28,6 +31,8 @@ const PRECACHE_URLS = [
   '/assets/icons/icon-512.png',
   '/assets/textures/noise.svg',
 ];
+
+const PRECACHE_URLS = PRECACHE_PATHS.map(p => BASE + p);
 
 self.addEventListener('install', event => {
   event.waitUntil(

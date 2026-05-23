@@ -102,13 +102,19 @@ function renderSectionPlaceholders() {
 
 function registerServiceWorker() {
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/service-worker.js').catch(err => {
+    navigator.serviceWorker.register('./service-worker.js').catch(err => {
       console.warn('Service worker registration failed:', err);
     });
   }
 }
 
 // ── Global event delegation ──────────────────────────────────────────────────
+
+function injectAuroraBlob() {
+  const blob = document.createElement('div');
+  blob.className = 'aurora-blob-3';
+  document.body.appendChild(blob);
+}
 
 function setupGlobalListeners() {
   document.addEventListener('click', event => {
@@ -130,6 +136,7 @@ async function boot() {
   }
 
   registerServiceWorker();
+  injectAuroraBlob();
   renderHeader();
   renderSectionPlaceholders();
   setupGlobalListeners();

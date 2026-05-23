@@ -2,7 +2,7 @@
   "name": "Habitual",
   "short_name": "Habitual",
   "description": "Build habits worth keeping.",
-  "start_url": "/",
+  "start_url": "./",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#080d1a",
