@@ -102,10 +102,26 @@
   80%       { transform: translateX(4px); }
 }
 
-/* Subtle breathe — for streak flames at milestones */
+/* Subtle breathe — for hot streak badges */
 @keyframes breathe {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.65; }
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.8; transform: scale(1.06); }
+}
+
+/* Flame flicker — legendary streaks */
+@keyframes flameFlicker {
+  0%, 100% { transform: scale(1)    rotate(-1deg); filter: brightness(1); }
+  25%       { transform: scale(1.08) rotate(1deg);  filter: brightness(1.2); }
+  50%       { transform: scale(0.96) rotate(-2deg); filter: brightness(0.9); }
+  75%       { transform: scale(1.05) rotate(0.5deg); filter: brightness(1.15); }
+}
+
+/* Milestone overlay banner — bounces in from top */
+@keyframes bannerBounce {
+  0%   { transform: translateX(-50%) translateY(-120%); }
+  65%  { transform: translateX(-50%) translateY(6px); }
+  82%  { transform: translateX(-50%) translateY(-3px); }
+  100% { transform: translateX(-50%) translateY(0); }
 }
 
 /* ══════════════════════════════════════════════════
@@ -139,7 +155,11 @@
 }
 
 .anim-banner-in {
-  animation: bannerSlideDown var(--duration-slow) var(--ease-out) forwards;
+  animation: bannerBounce 0.55s var(--ease-spring) forwards;
+}
+
+.anim-flame-flicker {
+  animation: flameFlicker 1.8s ease-in-out infinite;
 }
 
 .anim-flame-pulse {

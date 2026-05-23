@@ -8,9 +8,30 @@ import {
   getLogsForDate,
 } from './db.js';
 import { toDateString } from './utils.js';
+import { getAll, getById } from './habits.js';
+import {
+  calculateAllStreaks,
+  getCurrentStreak,
+  getMilestoneIfReached,
+  getComeback,
+} from './streaks.js';
 
 function dispatch() {
   document.dispatchEvent(new CustomEvent('logsUpdated'));
+}
+
+async function afterWrite(habitId) {
+  await calculateAllStreaks();
+  dispatch();
+
+  const habit = getById(habitId);
+  if (!habit) return;
+
+  const streak    = await getCurrentStreak(habit);
+  const milestone = getMilestoneIfReached(streak);
+  if (milestone) {
+    document.dispatchEvent(new CustomEvent('milestoneReached', { detail: { habit, milestone } }));
+  }
 }
 
 // ── Read ─────────────────────────────────────────────────────────────────────
@@ -32,7 +53,7 @@ export async function logCompletion({ habitId, date, value = null, isBackdated =
   } else {
     await addLog({ habitId, date, completed: true, value, isBackdated });
   }
-  dispatch();
+  await afterWrite(habitId);
 }
 
 export async function logPartial({ habitId, date, value }) {
@@ -42,14 +63,14 @@ export async function logPartial({ habitId, date, value }) {
   } else {
     await addLog({ habitId, date, completed: false, value, isBackdated: false });
   }
-  dispatch();
+  await afterWrite(habitId);
 }
 
 export async function removeLog(habitId, date) {
   const existing = await getLogForHabitOnDate(habitId, date);
   if (existing) {
     await deleteLog(existing.id);
-    dispatch();
+    await afterWrite(habitId);
   }
 }
 

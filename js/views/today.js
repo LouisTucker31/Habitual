@@ -4,6 +4,8 @@ import { getAll } from '../habits.js';
 import { logCompletion, logPartial, removeLog, getLogForHabit, getTodayLogs } from '../logging.js';
 import { open as openHabitModal, hexToRgba } from '../modals/habitModal.js';
 import { toDateString } from '../utils.js';
+import { calculateAllStreaks, getCachedStreak, getStreakStatus } from '../streaks.js';
+import { showMilestone, showPerfectDayBanner, checkAndShowComeback, maybeShowWeeklyReview } from '../celebrations.js';
 
 const TODAY = toDateString();
 const YESTERDAY = toDateString(new Date(Date.now() - 864e5));
@@ -16,9 +18,17 @@ let _rendering   = false; // guard against double-render during completion anima
 // ── Entry ─────────────────────────────────────────────────────────────────────
 
 export async function initialise() {
+  await calculateAllStreaks();
   await render();
+  await maybeShowWeeklyReview();
+
   document.addEventListener('habitsUpdated', () => { if (!_rendering) render(); });
-  document.addEventListener('logsUpdated',   () => { if (!_rendering) render(); });
+  document.addEventListener('logsUpdated',   () => { if (!_rendering) updateStreakDisplays(); });
+  document.addEventListener('milestoneReached', e => {
+    const { habit, milestone } = e.detail;
+    showMilestone(milestone, habit);
+  });
+
   scheduleMidnightRefresh();
 }
 
@@ -85,12 +95,10 @@ async function render() {
 // ── Card renderer ─────────────────────────────────────────────────────────────
 
 function renderCard(habit, log, isCompleted, index) {
-  const streak = 0; // Phase 3 will calculate real streaks
-  const flameClass = streakFlameClass(streak);
-  const flameEmoji = isCompleted ? '✓' : streakFlameEmoji(streak);
-  const badgeBg    = hexToRgba(habit.colour, 0.2);
-  const cardTint   = hexToRgba(habit.colour, 0.05);
-
+  const streak      = getCachedStreak(habit.id);
+  const status      = getStreakStatus(streak);
+  const badgeBg     = hexToRgba(habit.colour, 0.2);
+  const cardTint    = hexToRgba(habit.colour, 0.05);
   const categoryLabel = habit.category.charAt(0).toUpperCase() + habit.category.slice(1);
 
   let progressStrip = '';
@@ -110,6 +118,8 @@ function renderCard(habit, log, isCompleted, index) {
       </div>`;
   }
 
+  const flameHtml = streak > 0 ? renderFlame(streak, status) : '';
+
   return `
     <div class="habit-card ${isCompleted ? 'is-completed' : ''} anim-card-entrance"
       data-id="${habit.id}"
@@ -124,6 +134,7 @@ function renderCard(habit, log, isCompleted, index) {
         <span class="habit-card__name">${habit.name}</span>
         <div class="habit-card__meta">
           <span class="pill">${categoryLabel}</span>
+          ${flameHtml}
           ${progressLabel}
         </div>
         ${progressStrip}
@@ -134,6 +145,21 @@ function renderCard(habit, log, isCompleted, index) {
         </span>
       </div>
     </div>
+  `;
+}
+
+function renderFlame(streak, status) {
+  const animClass = {
+    warm:      '',
+    hot:       'anim-breathe',
+    blazing:   'anim-flame-pulse',
+    legendary: 'anim-flame-flicker',
+  }[status] ?? '';
+
+  return `
+    <span class="streak-badge streak-badge--${status} ${animClass}" data-streak-badge>
+      🔥 <span class="streak-badge__num">${streak}</span>
+    </span>
   `;
 }
 
@@ -255,12 +281,12 @@ async function handleCardTap(card, logMap) {
 
   if (navigator.vibrate) navigator.vibrate(10);
 
-  // Write to DB
+  // Write to DB (also refreshes streak cache + dispatches milestoneReached if needed)
   await logCompletion({ habitId: id, date: TODAY });
 
-  // Now allow re-renders and do one clean update of just the nudge text
   _rendering = false;
-  updateNudgeText();
+  updateStreakDisplays();
+  checkAndShowComeback(habit);
 }
 
 function updateNudgeText() {
@@ -300,7 +326,7 @@ async function handleUndo(card) {
   await removeLog(id, TODAY);
 
   _rendering = false;
-  updateNudgeText();
+  updateStreakDisplays();
 }
 
 // ── Numeric sheet ─────────────────────────────────────────────────────────────
@@ -375,18 +401,39 @@ function getStep(unit) {
   return 1;
 }
 
-// ── Streak helpers ────────────────────────────────────────────────────────────
+// ── Streak display update (in-place, no full re-render) ───────────────────────
 
-function streakFlameClass(streak) {
-  if (streak === 0)   return '';
-  if (streak < 7)     return 'streak--warm';
-  if (streak < 30)    return 'streak--hot';
-  if (streak < 100)   return 'streak--fire anim-breathe';
-  return 'streak--inferno anim-flame-pulse';
-}
+function updateStreakDisplays() {
+  const cards = document.querySelectorAll('#habits-list .habit-card');
+  cards.forEach(card => {
+    const id     = parseInt(card.dataset.id);
+    const streak = getCachedStreak(id);
+    const status = getStreakStatus(streak);
+    const meta   = card.querySelector('.habit-card__meta');
+    if (!meta) return;
 
-function streakFlameEmoji(streak) {
-  return streak === 0 ? '○' : '🔥';
+    const existing = meta.querySelector('[data-streak-badge]');
+    if (streak > 0) {
+      const html = renderFlame(streak, status);
+      if (existing) {
+        existing.outerHTML = html;
+      } else {
+        // Insert after the pill
+        const pill = meta.querySelector('.pill');
+        if (pill) pill.insertAdjacentHTML('afterend', html);
+        else meta.insertAdjacentHTML('afterbegin', html);
+      }
+    } else if (existing) {
+      existing.remove();
+    }
+  });
+
+  // Check for perfect day
+  const total     = document.querySelectorAll('#habits-list .habit-card').length;
+  const remaining = document.querySelectorAll('#habits-list .habit-card:not(.is-completed)').length;
+  if (total > 0 && remaining === 0) showPerfectDayBanner();
+
+  updateNudgeText();
 }
 
 // ── Midnight refresh ──────────────────────────────────────────────────────────
