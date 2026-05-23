@@ -1,36 +1,19 @@
-/* app.js — Entry point: initialises DB, registers service worker, renders placeholders */
+/* app.js — Entry point: initialises DB, registers service worker, boots all modules */
 
-import { openDB } from './db.js';
+import { openDB }                          from './db.js';
+import { toDateString, friendlyDate }      from './utils.js';
 import { initialise as initHabits }        from './habits.js';
-import { initialise as initLogging }       from './logging.js';
 import { initialise as initStreaks }       from './streaks.js';
-import { initialise as initToday }         from './views/today.js';
 import { initialise as initWeek }          from './views/week.js';
 import { initialise as initCalendar }      from './views/calendar.js';
 import { initialise as initInsights }      from './views/insights.js';
 import { initialise as initSettings }      from './views/settings.js';
-import { initialise as initHabitModal }    from './modals/habitModal.js';
 import { initialise as initDayModal }      from './modals/dayModal.js';
 import { initialise as initNotifications } from './notifications.js';
 import { initialise as initOnboarding }    from './onboarding.js';
 import { initialise as initCelebrations }  from './celebrations.js';
-
-// ── Date helpers ─────────────────────────────────────────────────────────────
-
-export function toDateString(date = new Date()) {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
-}
-
-export function friendlyDate(date = new Date()) {
-  return date.toLocaleDateString('en-GB', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-  });
-}
+import { initialise as initToday }         from './views/today.js';
+import { open as openHabitModal }          from './modals/habitModal.js';
 
 // ── Header ───────────────────────────────────────────────────────────────────
 
@@ -57,58 +40,18 @@ function renderHeader() {
   `;
 }
 
-// ── Section placeholders ─────────────────────────────────────────────────────
+// ── Floating add button ───────────────────────────────────────────────────────
 
-function renderSectionPlaceholders() {
-  document.getElementById('section-today').innerHTML = `
-    <p class="section-title">Today</p>
-    <div class="empty-state">
-      <span class="empty-state__icon">🌱</span>
-      <span class="empty-state__heading">No habits yet</span>
-      <span class="empty-state__body">Tap + to add your first habit and start building your streak.</span>
-    </div>
-    <button class="btn btn--primary" id="btn-add-habit" style="margin-top: 0;">+ Add habit</button>
-  `;
-
-  document.getElementById('section-week').innerHTML = `
-    <p class="section-title">This Week</p>
-    <div class="empty-state">
-      <span class="empty-state__icon">📅</span>
-      <span class="empty-state__heading">Nothing to show yet</span>
-      <span class="empty-state__body">Your weekly progress will appear here once you have habits.</span>
-    </div>
-  `;
-
-  document.getElementById('section-calendar').innerHTML = `
-    <p class="section-title">History</p>
-    <div class="empty-state">
-      <span class="empty-state__icon">🗓️</span>
-      <span class="empty-state__heading">No history yet</span>
-      <span class="empty-state__body">Your completion heatmap will fill in as you log habits each day.</span>
-    </div>
-  `;
-
-  document.getElementById('section-insights').innerHTML = `
-    <p class="section-title">Insights</p>
-    <div class="empty-state">
-      <span class="empty-state__icon">📊</span>
-      <span class="empty-state__heading">Insights coming soon</span>
-      <span class="empty-state__body">Log at least a week of habits to unlock your personal stats.</span>
-    </div>
-  `;
+function injectFAB() {
+  const fab = document.createElement('button');
+  fab.className = 'fab';
+  fab.setAttribute('aria-label', 'Add habit');
+  fab.innerHTML = '+';
+  fab.addEventListener('click', () => openHabitModal());
+  document.body.appendChild(fab);
 }
 
-// ── Service worker ───────────────────────────────────────────────────────────
-
-function registerServiceWorker() {
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./service-worker.js').catch(err => {
-      console.warn('Service worker registration failed:', err);
-    });
-  }
-}
-
-// ── Global event delegation ──────────────────────────────────────────────────
+// ── Aurora blob ───────────────────────────────────────────────────────────────
 
 function injectAuroraBlob() {
   const blob = document.createElement('div');
@@ -116,13 +59,24 @@ function injectAuroraBlob() {
   document.body.appendChild(blob);
 }
 
+// ── Global listeners ──────────────────────────────────────────────────────────
+
 function setupGlobalListeners() {
   document.addEventListener('click', event => {
-    // Close modal when backdrop is tapped
     if (event.target.classList.contains('modal-backdrop')) {
       event.target.classList.remove('is-open');
     }
   });
+}
+
+// ── Service worker ────────────────────────────────────────────────────────────
+
+function registerServiceWorker() {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./service-worker.js').catch(err => {
+      console.warn('Service worker registration failed:', err);
+    });
+  }
 }
 
 // ── Boot ─────────────────────────────────────────────────────────────────────
@@ -138,23 +92,27 @@ async function boot() {
   registerServiceWorker();
   injectAuroraBlob();
   renderHeader();
-  renderSectionPlaceholders();
   setupGlobalListeners();
 
-  // Phase 1: all initialisers are no-ops — wiring confirmed, no errors
-  initHabits();
-  initLogging();
+  // Initialise data layer first, then views
+  await initHabits();
+
+  // Views — today is live, rest are still placeholders
+  await initToday();
+
+  // Placeholder initialisers (no-ops until their phase)
   initStreaks();
-  initToday();
   initWeek();
   initCalendar();
   initInsights();
   initSettings();
-  initHabitModal();
   initDayModal();
   initNotifications();
   initOnboarding();
   initCelebrations();
+
+  // FAB always visible
+  injectFAB();
 }
 
 document.addEventListener('DOMContentLoaded', boot);

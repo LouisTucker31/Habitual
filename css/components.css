@@ -766,3 +766,449 @@
   font-size: var(--text-sm);
   font-weight: var(--weight-medium);
 }
+
+/* ══════════════════════════════════════════════════
+   PHASE 2 — HABIT CARD DETAIL
+══════════════════════════════════════════════════ */
+
+/* Checkmark overlay on icon */
+.habit-card__check {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: var(--weight-bold);
+  color: var(--color-success);
+  background: rgba(8, 13, 26, 0.45);
+  border-radius: inherit;
+}
+
+.habit-card__icon-wrap {
+  position: relative;
+}
+
+/* Desktop hover / press */
+@media (hover: hover) {
+  .habit-card:not(.is-completed):hover {
+    transform: translateY(-2px);
+    border-color: var(--color-border-active);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
+  }
+}
+
+.habit-card:active {
+  transform: scale(0.98);
+}
+
+/* Numeric progress inside card */
+.habit-progress-track {
+  height: 3px;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin-top: var(--space-2);
+}
+
+.habit-progress-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width var(--duration-slow) var(--ease-out);
+  min-width: 2px;
+}
+
+.habit-progress-label {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+}
+
+/* Streak flame states */
+.streak-badge { transition: color var(--duration-normal); }
+.streak--warm  { color: #d97706; }
+.streak--hot   { color: var(--color-streak-low); }
+.streak--fire  { color: #ef4444; }
+.streak--inferno { color: #dc2626; }
+
+/* Perfect day nudge */
+.perfect-nudge {
+  text-align: center;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semi);
+  color: var(--color-streak-low);
+  padding: var(--space-2) 0 var(--space-4);
+}
+
+/* ══════════════════════════════════════════════════
+   PHASE 2 — HABIT MODAL FIELDS
+══════════════════════════════════════════════════ */
+
+/* Category pill scroll row */
+.pill-scroll {
+  display: flex;
+  gap: var(--space-2);
+  overflow-x: auto;
+  padding-bottom: var(--space-1);
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.pill-scroll::-webkit-scrollbar { display: none; }
+
+.pill-btn {
+  flex-shrink: 0;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--color-text-secondary);
+  transition: background var(--duration-fast), color var(--duration-fast),
+              border-color var(--duration-fast);
+  white-space: nowrap;
+}
+
+.pill-btn.is-active {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #fff;
+}
+
+/* Day picker */
+.day-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.day-btn {
+  width: 42px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--color-text-secondary);
+  transition: background var(--duration-fast), color var(--duration-fast);
+}
+
+.day-btn.is-active {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #fff;
+}
+
+/* Numeric fields row */
+.numeric-fields {
+  display: flex;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+
+/* Icon preview button */
+.icon-preview-btn {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-md);
+  font-size: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform var(--duration-fast);
+}
+
+.icon-preview-btn:active { transform: scale(0.92); }
+
+/* Emoji grid */
+.emoji-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: var(--space-3);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.03);
+  padding: var(--space-2);
+}
+
+.emoji-cell {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  border-radius: var(--radius-sm);
+  transition: background var(--duration-fast), transform var(--duration-fast);
+}
+
+.emoji-cell:active {
+  background: rgba(255, 255, 255, 0.1);
+  transform: scale(0.85);
+}
+
+/* Colour swatch row */
+.colour-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.colour-swatch {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  border: 2px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform var(--duration-fast), border-color var(--duration-fast);
+}
+
+.colour-swatch:active { transform: scale(0.9); }
+
+.colour-swatch.is-selected {
+  border-color: #fff;
+  transform: scale(1.1);
+}
+
+.colour-tick {
+  font-size: 16px;
+  color: #fff;
+  font-weight: var(--weight-bold);
+  opacity: 0;
+  transition: opacity var(--duration-fast);
+  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+}
+
+.colour-swatch.is-selected .colour-tick { opacity: 1; }
+
+/* Reminder toggle */
+.reminder-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.form-sublabel {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.toggle-switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+
+.toggle-track {
+  display: block;
+  width: 48px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: background var(--duration-fast);
+  position: relative;
+}
+
+.toggle-switch input:checked + .toggle-track {
+  background: var(--color-accent);
+}
+
+.toggle-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  background: #fff;
+  border-radius: var(--radius-full);
+  transition: transform var(--duration-fast) var(--ease-spring);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+
+.toggle-switch input:checked + .toggle-track .toggle-thumb {
+  transform: translateX(20px);
+}
+
+/* Form errors */
+.form-error {
+  display: none;
+  font-size: var(--text-xs);
+  color: var(--color-danger);
+  margin-top: 4px;
+}
+
+/* Modal footer — save + delete stacked, sticky bottom */
+.modal-footer {
+  position: sticky;
+  bottom: 0;
+  background: var(--color-surface-raise);
+  padding: var(--space-4) 0 var(--space-2);
+  margin-top: var(--space-4);
+}
+
+/* Discard bar */
+.discard-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  margin-top: var(--space-3);
+}
+
+/* ══════════════════════════════════════════════════
+   PHASE 2 — NUMERIC LOG SHEET
+══════════════════════════════════════════════════ */
+
+.numeric-sheet {
+  padding-bottom: calc(var(--space-8) + env(safe-area-inset-bottom));
+}
+
+.numeric-sheet-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+}
+
+.numeric-sheet-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+
+.numeric-sheet-name {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semi);
+}
+
+.numeric-input-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  margin-bottom: var(--space-3);
+}
+
+.numeric-adj-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 24px;
+  font-weight: var(--weight-bold);
+  color: var(--color-text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--duration-fast), transform var(--duration-fast);
+}
+
+.numeric-adj-btn:active {
+  background: rgba(255, 255, 255, 0.15);
+  transform: scale(0.92);
+}
+
+.numeric-input-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-1);
+}
+
+.numeric-value-input {
+  width: 100px;
+  text-align: center;
+  font-size: var(--text-3xl);
+  font-weight: var(--weight-bold);
+  color: var(--color-text-primary);
+  background: transparent;
+  border-bottom: 2px solid var(--color-accent);
+  padding: 0 var(--space-2) var(--space-1);
+}
+
+.numeric-value-input::-webkit-inner-spin-button,
+.numeric-value-input::-webkit-outer-spin-button { opacity: 0; }
+
+.numeric-unit-label {
+  font-size: var(--text-lg);
+  color: var(--color-text-secondary);
+}
+
+.numeric-target-label {
+  text-align: center;
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-6);
+}
+
+/* ══════════════════════════════════════════════════
+   PHASE 2 — MISSED HABITS LIST
+══════════════════════════════════════════════════ */
+
+.missed-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-text-primary);
+}
+
+/* ══════════════════════════════════════════════════
+   PHASE 2 — FLOATING ADD BUTTON
+══════════════════════════════════════════════════ */
+
+.fab {
+  position: fixed;
+  bottom: calc(var(--space-8) + env(safe-area-inset-bottom));
+  right: var(--space-5);
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-full);
+  background: var(--color-accent);
+  color: #fff;
+  font-size: 28px;
+  font-weight: var(--weight-regular);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.45);
+  z-index: 150;
+  transition: transform var(--duration-fast) var(--ease-spring),
+              box-shadow var(--duration-fast);
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.fab:active {
+  transform: scale(0.9);
+  box-shadow: 0 2px 10px rgba(59, 130, 246, 0.3);
+}
+
+@media (hover: hover) {
+  .fab:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 28px rgba(59, 130, 246, 0.55);
+  }
+}

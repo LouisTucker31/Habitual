@@ -1,4 +1,4 @@
-const CACHE_NAME = 'habitual-v1';
+const CACHE_NAME = 'habitual-v2';
 
 // Derive base path from where the SW is installed — works on GitHub Pages subdirs
 const BASE = self.location.pathname.replace(/\/service-worker\.js$/, '');
@@ -12,6 +12,7 @@ const PRECACHE_PATHS = [
   '/css/components.css',
   '/css/animations.css',
   '/js/app.js',
+  '/js/utils.js',
   '/js/db.js',
   '/js/habits.js',
   '/js/logging.js',
