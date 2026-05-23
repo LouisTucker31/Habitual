@@ -277,7 +277,30 @@ function updateNudgeText() {
 
 async function handleUndo(card) {
   const id = parseInt(card.dataset.id);
+  const habit = getAll().find(h => h.id === id);
+  if (!habit) return;
+
+  _rendering = true;
+
+  // Update card in-place — no re-render, no dip
+  card.dataset.completed = 'false';
+  card.classList.remove('is-completed');
+
+  const checkBtn = card.querySelector('.check-btn');
+  if (checkBtn) {
+    checkBtn.classList.remove('is-checked');
+    checkBtn.textContent = '';
+  }
+
+  const iconWrap = card.querySelector('.habit-card__icon-wrap');
+  if (iconWrap) {
+    iconWrap.innerHTML = `<span class="habit-card__icon">${habit.icon}</span>`;
+  }
+
   await removeLog(id, TODAY);
+
+  _rendering = false;
+  updateNudgeText();
 }
 
 // ── Numeric sheet ─────────────────────────────────────────────────────────────
