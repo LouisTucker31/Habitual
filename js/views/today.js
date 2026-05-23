@@ -391,6 +391,56 @@ function openNumericSheet(habit, existingLog) {
   backdrop.addEventListener('click', e => {
     if (e.target === backdrop) backdrop.remove();
   });
+
+  setupNumericSheetDrag(backdrop.querySelector('.numeric-sheet'), () => backdrop.remove());
+}
+
+function setupNumericSheetDrag(sheet, onDismiss) {
+  if (!sheet) return;
+  let startY = 0, deltaY = 0, dragging = false, dismissing = false;
+
+  const onStart = e => {
+    startY    = e.touches ? e.touches[0].clientY : e.clientY;
+    deltaY    = 0;
+    dragging  = true;
+    dismissing = false;
+  };
+
+  const onMove = e => {
+    if (!dragging) return;
+    const y = e.touches ? e.touches[0].clientY : e.clientY;
+    deltaY   = y - startY;
+
+    if (!dismissing) {
+      if (sheet.scrollTop <= 0 && deltaY > 0) {
+        dismissing = true;
+        sheet.style.overflow = 'hidden';
+      } else {
+        return;
+      }
+    }
+
+    e.preventDefault();
+    sheet.style.transition = 'none';
+    sheet.style.transform  = `translateY(${Math.max(0, deltaY)}px)`;
+  };
+
+  const onEnd = () => {
+    if (!dragging) return;
+    dragging = false;
+    sheet.style.overflow   = '';
+    sheet.style.transition = '';
+    if (dismissing && deltaY > 100) {
+      onDismiss();
+    } else {
+      sheet.style.transform = '';
+    }
+    dismissing = false;
+  };
+
+  sheet.addEventListener('touchstart', onStart, { passive: true });
+  sheet.addEventListener('touchmove',  onMove,  { passive: false });
+  sheet.addEventListener('touchend',   onEnd);
 }
 
 function getStep(unit) {

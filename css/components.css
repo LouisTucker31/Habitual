@@ -429,94 +429,259 @@
    WEEK GRID
 ══════════════════════════════════════════════════ */
 .week-grid {
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
-.week-grid__table {
-  width: 100%;
-  min-width: 320px;
-  border-collapse: separate;
-  border-spacing: 4px;
+/* Header row */
+.week-grid__header-row {
+  display: grid;
+  grid-template-columns: var(--week-name-col, 88px) repeat(7, 1fr);
+  align-items: center;
+  margin-bottom: var(--space-1);
 }
 
-.week-grid__day-header {
-  font-size: var(--text-xs);
+.week-grid__day-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: var(--space-1) 0;
+  cursor: pointer;
+}
+
+.week-grid__day-col.is-future {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.week-grid__day-label {
+  font-size: 10px;
   font-weight: var(--weight-semi);
   color: var(--color-text-secondary);
-  text-align: center;
-  padding-bottom: var(--space-2);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
-.week-grid__day-header.is-today {
+.week-grid__day-num {
+  font-size: 13px;
+  font-weight: var(--weight-semi);
+  color: var(--color-text-muted);
+}
+
+.week-grid__day-col.is-today .week-grid__day-label,
+.week-grid__day-col.is-today .week-grid__day-num {
   color: var(--color-accent);
 }
 
+/* Habit rows */
+.week-grid__row {
+  display: grid;
+  grid-template-columns: var(--week-name-col, 88px) repeat(7, 1fr);
+  align-items: center;
+  min-height: 44px;
+}
+
+.week-grid__name-col {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding-right: var(--space-2);
+  min-width: 0;
+}
+
+.week-grid__habit-icon {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+.week-grid__habit-name {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Cells */
 .week-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 32px;
   height: 32px;
   border-radius: var(--radius-full);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  margin: 0 auto;
+  font-size: 14px;
   cursor: pointer;
-  transition: opacity var(--duration-fast);
+  transition: opacity var(--duration-fast), background-color var(--duration-fast);
+  -webkit-user-select: none;
+  user-select: none;
 }
 
-.week-cell--empty {
-  opacity: 0;
+.week-cell--not-due {
+  background: transparent;
+  border: none;
   pointer-events: none;
 }
 
 .week-cell--completed {
   background-color: var(--habit-color, var(--color-accent));
-  border-color: transparent;
+  border: none;
 }
 
-.week-cell--incomplete {
+.week-cell--pending {
   background: transparent;
+  border: 1.5px solid rgba(255,255,255,0.15);
 }
 
-.week-cell--frozen::after {
-  content: '❄️';
-  font-size: 14px;
+.week-cell--missed {
+  background: transparent;
+  border: 1.5px solid rgba(239, 68, 68, 0.3);
+}
+
+.week-cell--frozen {
+  background: rgba(147, 197, 253, 0.1);
+  border: 1.5px solid rgba(147, 197, 253, 0.3);
+}
+
+.week-cell--future {
+  opacity: 0.25;
+  pointer-events: none;
+  border: 1.5px solid rgba(255,255,255,0.06);
+}
+
+/* Summary row */
+.week-grid__summary-row {
+  margin-top: var(--space-1);
+  border-top: 1px solid rgba(255,255,255,0.05);
+  padding-top: var(--space-1);
+}
+
+.week-grid__summary-label {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.week-grid__summary-cell {
+  font-size: 10px;
+  font-weight: var(--weight-semi);
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+.week-grid__summary-cell.is-perfect { color: var(--color-accent); }
+.week-grid__summary-cell.is-good    { color: #60a5fa; }
+.week-grid__summary-cell.is-ok      { color: var(--color-text-secondary); }
+.week-grid__summary-cell.is-low     { color: rgba(239, 68, 68, 0.6); }
+
+/* Narrow screens — hide habit names, show icon only */
+@media (max-width: 380px) {
+  :root { --week-name-col: 36px; }
+  .week-grid__habit-name { display: none; }
 }
 
 /* ══════════════════════════════════════════════════
-   HEATMAP
+   HEATMAP / CALENDAR
 ══════════════════════════════════════════════════ */
 .heatmap {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: var(--space-3);
 }
 
 .heatmap__month-label {
-  font-size: var(--text-sm);
-  font-weight: var(--weight-semi);
-  color: var(--color-text-secondary);
-  margin-bottom: var(--space-2);
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.heatmap__month-name {
+  font-size: var(--text-base);
+  font-weight: var(--weight-semi);
+  color: var(--color-text-primary);
+}
+
+.heatmap__nav-btn {
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  transition: color var(--duration-fast);
+}
+
+.heatmap__nav-btn.is-disabled {
+  opacity: 0.2;
+  pointer-events: none;
+}
+
+.heatmap__day-names {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+}
+
+.heatmap__day-name {
+  font-size: 10px;
+  font-weight: var(--weight-semi);
+  color: var(--color-text-muted);
+  text-align: center;
+  letter-spacing: 0.04em;
 }
 
 .heatmap__grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
+  gap: 3px;
 }
 
 .heatmap__day {
-  aspect-ratio: 1;
+  aspect-ratio: 1 / 1;
   border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: opacity var(--duration-fast);
+  transition: background-color 0.2s ease, opacity var(--duration-fast);
+  position: relative;
+}
+
+.heatmap__day--empty {
+  background: transparent;
+  pointer-events: none;
 }
 
 .heatmap__day--none    { background: rgba(255, 255, 255, 0.04); }
-.heatmap__day--partial { background: rgba(59, 130, 246, 0.25); }
-.heatmap__day--full    { background: rgba(59, 130, 246, 0.6); }
-.heatmap__day--perfect { background: #3b82f6; box-shadow: 0 0 8px rgba(59, 130, 246, 0.5); }
-.heatmap__day--future  { background: transparent; pointer-events: none; }
+.heatmap__day--low     { background: #1e3a5f; }
+.heatmap__day--partial { background: rgba(37, 99, 235, 0.5); }
+.heatmap__day--full    { background: #3b82f6; opacity: 0.75; }
+.heatmap__day--perfect { background: #3b82f6; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.18); }
+
+.heatmap__day--future {
+  background: rgba(255,255,255,0.02);
+  pointer-events: none;
+  opacity: 0.4;
+}
+
+.heatmap__day--today::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: calc(var(--radius-sm) + 2px);
+  border: 1.5px solid var(--color-accent);
+  pointer-events: none;
+}
 
 /* ══════════════════════════════════════════════════
    INSIGHTS STAT CARDS
@@ -1430,4 +1595,177 @@
   line-height: 1.5;
   padding-top: var(--space-1);
   border-top: 1px solid var(--color-border);
+}
+
+/* ══════════════════════════════════════════════════
+   DAY MODAL
+══════════════════════════════════════════════════ */
+.day-modal {
+  max-height: 72dvh;
+}
+
+.day-modal__header {
+  position: relative;
+  padding: var(--space-1) 0 var(--space-5);
+}
+
+.day-modal__title {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-1);
+}
+
+.day-modal__summary {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+.day-modal__close {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: rgba(255,255,255,0.07);
+  border: none;
+  color: var(--color-text-secondary);
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.day-modal__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.day-modal__empty {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  text-align: center;
+  padding: var(--space-6) 0;
+}
+
+.day-modal__note {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  text-align: center;
+  padding: var(--space-4) 0 var(--space-2);
+}
+
+/* Day modal rows */
+.day-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+
+.day-row:last-child {
+  border-bottom: none;
+}
+
+.day-row__icon {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.day-row__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.day-row__name {
+  display: block;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semi);
+  color: var(--color-text-primary);
+  margin-bottom: 2px;
+}
+
+.day-row__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.day-row__right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.day-row__status {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.day-row__status--done   { font-weight: var(--weight-bold); }
+.day-row__status--missed { color: rgba(255,255,255,0.2); }
+.day-row__status--frozen { }
+
+.day-row__backdated {
+  font-size: 12px;
+  opacity: 0.6;
+}
+
+.day-row__value {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.day-row__late-btn {
+  font-size: var(--text-xs);
+  padding: 4px 10px;
+  white-space: nowrap;
+}
+
+/* Inline numeric input */
+.day-row__numeric-input {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  animation: expandIn 0.2s ease both;
+}
+
+.day-row__num-field {
+  width: 70px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary);
+  font-size: var(--text-sm);
+  padding: 6px 8px;
+  text-align: center;
+  font-size: max(16px, 1em);
+}
+
+.day-row__num-unit {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.day-row__num-confirm {
+  font-size: var(--text-xs);
+  padding: 6px 12px;
+}
+
+@keyframes expandIn {
+  from { opacity: 0; max-height: 0; }
+  to   { opacity: 1; max-height: 60px; }
 }

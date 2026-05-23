@@ -132,13 +132,13 @@ async function boot() {
   // Initialise data layer first, then views
   await initHabits();
 
-  // Views — today is live, rest are still placeholders
+  // Views
   await initToday();
+  await initWeek();
+  await initCalendar();
 
-  // Placeholder initialisers (no-ops until their phase)
+  // Remaining no-op initialisers
   initStreaks();
-  initWeek();
-  initCalendar();
   initInsights();
   initSettings();
   initDayModal();

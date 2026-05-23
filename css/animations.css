@@ -186,6 +186,17 @@
 .anim-card-entrance:nth-child(9)  { animation-delay: 320ms; }
 .anim-card-entrance:nth-child(10) { animation-delay: 360ms; }
 
+/* Week cell completion pulse */
+@keyframes cellPulse {
+  0%   { box-shadow: 0 0 0 0 var(--habit-color, rgba(59,130,246,0.6)); }
+  50%  { box-shadow: 0 0 0 6px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+
+.anim-cell-pulse {
+  animation: cellPulse 0.35s ease-out forwards;
+}
+
 /* Confetti particle — position/colour set inline by JS */
 .confetti-particle {
   position: fixed;

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'habitual-v3';
+const CACHE_NAME = 'habitual-v4';
 
 // Derive base path from where the SW is installed — works on GitHub Pages subdirs
 const BASE = self.location.pathname.replace(/\/service-worker\.js$/, '');

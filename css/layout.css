@@ -51,7 +51,7 @@
 
 /* ── Section shared styles ───────────────────────── */
 .section {
-  padding: var(--space-6) var(--space-5) 0;
+  padding: var(--space-6) var(--space-5) var(--space-10);
 }
 
 .section-title {
@@ -65,7 +65,7 @@
 
 /* ── Today section ───────────────────────────────── */
 #section-today {
-  padding: var(--space-4) var(--space-5) var(--space-8);
+  padding: var(--space-4) var(--space-5) var(--space-10);
 }
 
 #section-today .habits-list {
@@ -76,17 +76,17 @@
 
 /* ── Week section ────────────────────────────────── */
 #section-week {
-  padding-top: var(--space-8);
+  padding-top: var(--space-12);
 }
 
 /* ── Calendar section ────────────────────────────── */
 #section-calendar {
-  padding-top: var(--space-8);
+  padding-top: var(--space-12);
 }
 
 /* ── Insights section ────────────────────────────── */
 #section-insights {
-  padding-top: var(--space-8);
+  padding-top: var(--space-12);
 }
 
 /* ── Section dividers ────────────────────────────── */
