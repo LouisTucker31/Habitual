@@ -252,8 +252,7 @@
   overflow-x: hidden;
   transform: translateY(100%);
   transition: transform var(--duration-slow) var(--ease-out);
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
+  overscroll-behavior-y: none;
 }
 
 .modal-backdrop.is-open .modal-sheet {

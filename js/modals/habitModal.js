@@ -415,64 +415,72 @@ function attachListeners() {
 }
 
 // ── Drag-to-dismiss ───────────────────────────────────────────────────────────
-// Only active when drag starts on the drag handle. Detects intent (vertical vs
-// horizontal) before committing, so horizontal swipes inside the sheet don't
-// accidentally dismiss it.
+// Listens on the whole sheet. When content is scrolled to top and user drags
+// down, we take over: lock scroll, move the sheet. Content and sheet move
+// together as one rigid piece — no independent bounce.
 
 function setupDragDismiss() {
-  const sheet  = document.getElementById('habit-modal-sheet');
-  const handle = sheet.querySelector('.modal-drag-handle');
+  const sheet = document.getElementById('habit-modal-sheet');
 
-  let startX = 0, startY = 0, deltaY = 0;
-  let dragging = false, intentDecided = false, isVertical = false;
+  let startY = 0, deltaY = 0;
+  let dragging = false, dismissing = false;
 
   const onStart = e => {
-    startX = e.touches ? e.touches[0].clientX : e.clientX;
-    startY = e.touches ? e.touches[0].clientY : e.clientY;
-    deltaY = 0;
-    dragging = true;
-    intentDecided = false;
-    isVertical = false;
+    startY    = e.touches ? e.touches[0].clientY : e.clientY;
+    deltaY    = 0;
+    dragging  = true;
+    dismissing = false;
   };
 
   const onMove = e => {
     if (!dragging) return;
-    const x = e.touches ? e.touches[0].clientX : e.clientX;
-    const y = e.touches ? e.touches[0].clientY : e.clientY;
-    const dx = Math.abs(x - startX);
-    const dy = y - startY;
+    const y  = e.touches ? e.touches[0].clientY : e.clientY;
+    deltaY   = y - startY;
 
-    // Decide intent on first meaningful movement
-    if (!intentDecided && (dx > 4 || Math.abs(dy) > 4)) {
-      isVertical = Math.abs(dy) > dx;
-      intentDecided = true;
+    const atTop = sheet.scrollTop <= 0;
+
+    if (!dismissing) {
+      // Only enter dismiss mode when dragging down from top
+      if (atTop && deltaY > 0) {
+        dismissing = true;
+        // Freeze the sheet's own scroll so content doesn't move independently
+        sheet.style.overflow = 'hidden';
+      } else {
+        return; // not at top or dragging up — let normal scroll handle it
+      }
     }
 
-    if (!isVertical) return; // horizontal — let the sheet scroll naturally
-
-    deltaY = dy;
-    if (deltaY > 0) {
-      sheet.style.transition = 'none';
-      sheet.style.transform  = `translateY(${deltaY}px)`;
-    }
+    // Move the whole sheet — content is locked so they move as one
+    e.preventDefault();
+    const resistance = deltaY > 0 ? 1 : 0.3;
+    sheet.style.transition = 'none';
+    sheet.style.transform  = `translateY(${Math.max(0, deltaY * resistance)}px)`;
   };
 
   const onEnd = () => {
     if (!dragging) return;
     dragging = false;
+
+    // Restore scroll
+    sheet.style.overflow   = '';
     sheet.style.transition = '';
-    sheet.style.transform  = '';
-    if (isVertical && deltaY > 100) tryClose();
+
+    if (dismissing && deltaY > 100) {
+      tryClose();
+    } else {
+      sheet.style.transform = '';
+    }
+
+    dismissing = false;
     deltaY = 0;
   };
 
-  // Attach only to the drag handle — not the whole sheet
-  handle.addEventListener('touchstart', onStart, { passive: true });
-  handle.addEventListener('touchmove',  onMove,  { passive: false });
-  handle.addEventListener('touchend',   onEnd);
-  handle.addEventListener('mousedown',  onStart);
-  window.addEventListener('mousemove',  onMove);
-  window.addEventListener('mouseup',    onEnd);
+  sheet.addEventListener('touchstart', onStart, { passive: true });
+  sheet.addEventListener('touchmove',  onMove,  { passive: false });
+  sheet.addEventListener('touchend',   onEnd);
+  sheet.addEventListener('mousedown',  onStart);
+  window.addEventListener('mousemove', onMove);
+  window.addEventListener('mouseup',   onEnd);
 }
 
 // ── Save / delete ─────────────────────────────────────────────────────────────
