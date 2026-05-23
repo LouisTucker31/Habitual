@@ -62,6 +62,18 @@ async function render() {
   const section = document.getElementById('section-calendar');
   if (!section) return;
 
+  const habits = getAll();
+  if (habits.length === 0) {
+    section.innerHTML = `
+      <p class="section-title">History</p>
+      <div class="empty-state">
+        <span class="empty-state__icon">🗓️</span>
+        <span class="empty-state__heading">No history yet</span>
+        <span class="empty-state__body">Add a habit and start logging to see your history here.</span>
+      </div>`;
+    return;
+  }
+
   const today    = toDateString();
   const now      = new Date();
   const isCurrentMonth = (_year === now.getFullYear() && _month === now.getMonth());
