@@ -3,7 +3,7 @@
 import { getAll } from '../habits.js';
 import { getLogsForDateRange } from '../db.js';
 import { toDateString } from '../utils.js';
-import { open as openDayModal } from '../modals/dayModal.js';
+import { logCompletion, removeLog } from '../logging.js';
 
 const DAY_LABELS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
@@ -62,14 +62,6 @@ async function render() {
     if (!logMap[log.habitId]) logMap[log.habitId] = {};
     logMap[log.habitId][log.date] = log;
   }
-
-  // Day completion percentages for summary row
-  const dayPcts = days.map(d => {
-    const due  = habits.filter(h => isDue(h, d));
-    if (due.length === 0) return null;
-    const done = due.filter(h => logMap[h.id]?.[d]?.completed).length;
-    return Math.round((done / due.length) * 100);
-  });
 
   let html = `<p class="section-title">This Week</p>`;
 
@@ -146,24 +138,34 @@ async function render() {
     html += `</div>`;
   });
 
-  // Summary row
-  html += `<div class="week-grid__row week-grid__summary-row">
-    <div class="week-grid__name-col week-grid__summary-label">Completion</div>`;
-  dayPcts.forEach((pct, i) => {
-    const d = days[i];
-    if (pct === null) {
-      html += `<div class="week-grid__summary-cell"></div>`;
-    } else {
-      const cls = pct === 100 ? 'is-perfect' : pct >= 67 ? 'is-good' : pct >= 34 ? 'is-ok' : 'is-low';
-      html += `<div class="week-grid__summary-cell ${cls}">${d <= today ? pct + '%' : ''}</div>`;
-    }
-  });
-  html += `</div>`;
-
   html += `</div>`; // .week-grid
 
   section.innerHTML = html;
-  attachListeners(section, days, today);
+  attachCellListeners(section);
+}
+
+// ── Cell tap — toggle completion ──────────────────────────────────────────────
+
+function attachCellListeners(section) {
+  section.querySelectorAll('.week-cell[data-habit-id]').forEach(cell => {
+    if (cell.classList.contains('week-cell--future')) return;
+    if (cell.classList.contains('week-cell--frozen')) return;
+    if (cell.classList.contains('week-cell--not-due')) return;
+
+    const habitId = parseInt(cell.dataset.habitId);
+    const date    = cell.dataset.date;
+    const habit   = getAll().find(h => h.id === habitId);
+    if (!habit) return;
+
+    cell.addEventListener('click', async () => {
+      if (cell.classList.contains('week-cell--completed')) {
+        await removeLog(habitId, date);
+      } else {
+        await logCompletion({ habitId, date, isBackdated: date !== toDateString() });
+      }
+      // render() fires automatically via logsUpdated
+    });
+  });
 }
 
 // ── Hex helper (duplicated from habitModal to avoid circular import) ───────────
@@ -176,13 +178,3 @@ function hexToRgba(hex, alpha) {
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
-// ── Listeners ─────────────────────────────────────────────────────────────────
-
-function attachListeners(section, days, today) {
-  // Tap a day column header or any cell in that column → open day modal
-  section.querySelectorAll('[data-date]').forEach(el => {
-    const date = el.dataset.date;
-    if (!date || date > today) return;
-    el.addEventListener('click', () => openDayModal(date));
-  });
-}

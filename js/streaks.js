@@ -204,15 +204,7 @@ export async function getOverallAppStreak(threshold = 0.8) {
   let streak    = 0;
   let cursor    = addDays(today, -1);
 
-  // Include today if all due habits completed
-  const todayDue = habits.filter(h => isDue(h, today));
-  if (todayDue.length > 0) {
-    const todayLogs = await Promise.all(
-      todayDue.map(h => buildLogMap(h.id).then(m => m[today]))
-    );
-    const todayPct = todayLogs.filter(l => l?.completed).length / todayDue.length;
-    if (todayPct >= threshold) streak = 1;
-  }
+  // Today is never counted — streak only increments at midnight once the day is closed
 
   for (let i = 0; i < 365; i++) {
     const due = habits.filter(h => isDue(h, cursor));

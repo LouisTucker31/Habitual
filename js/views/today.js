@@ -22,8 +22,8 @@ export async function initialise() {
   await render();
   await maybeShowWeeklyReview();
 
-  document.addEventListener('habitsUpdated', () => { if (!_rendering) render(); });
-  document.addEventListener('logsUpdated',   () => { if (!_rendering) updateStreakDisplays(); });
+  document.addEventListener('habitsUpdated', () => { if (!_rendering) render(false); });
+  document.addEventListener('logsUpdated',   () => { if (!_rendering) render(false); });
   document.addEventListener('milestoneReached', e => {
     const { habit, milestone } = e.detail;
     showMilestone(milestone, habit);
@@ -34,7 +34,7 @@ export async function initialise() {
 
 // ── Main render ───────────────────────────────────────────────────────────────
 
-async function render() {
+async function render(animate = true) {
   const section = document.getElementById('section-today');
   if (!section) return;
 
@@ -83,7 +83,7 @@ async function render() {
     html += `<div class="habits-list" id="habits-list">`;
     due.forEach((h, i) => {
       const log = logMap[h.id] ?? null;
-      html += renderCard(h, log, !!log?.completed, i);
+      html += renderCard(h, log, !!log?.completed, i, animate);
     });
     html += `</div>`;
   }
@@ -94,7 +94,7 @@ async function render() {
 
 // ── Card renderer ─────────────────────────────────────────────────────────────
 
-function renderCard(habit, log, isCompleted, index) {
+function renderCard(habit, log, isCompleted, index, animate = true) {
   const streak      = getCachedStreak(habit.id);
   const status      = getStreakStatus(streak);
   const badgeBg     = hexToRgba(habit.colour, 0.2);
@@ -121,7 +121,7 @@ function renderCard(habit, log, isCompleted, index) {
   const flameHtml = streak > 0 ? renderFlame(streak, status) : '';
 
   return `
-    <div class="habit-card ${isCompleted ? 'is-completed' : ''} anim-card-entrance"
+    <div class="habit-card ${isCompleted ? 'is-completed' : ''} ${animate ? 'anim-card-entrance' : ''}"
       data-id="${habit.id}"
       data-format="${habit.format}"
       data-completed="${isCompleted}"

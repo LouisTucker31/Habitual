@@ -450,7 +450,7 @@
   align-items: center;
   gap: 2px;
   padding: var(--space-1) 0;
-  cursor: pointer;
+  cursor: default;
 }
 
 .week-grid__day-col.is-future {
